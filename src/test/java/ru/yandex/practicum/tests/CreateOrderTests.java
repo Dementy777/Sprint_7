@@ -2,6 +2,7 @@ package ru.yandex.practicum.tests;
 
 import io.qameta.allure.Description;
 import io.restassured.response.ValidatableResponse;
+import org.apache.http.HttpStatus;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -63,7 +64,7 @@ public class CreateOrderTests extends BaseTest {
         order.setColor(scooterColors);
         ValidatableResponse response = orderSteps
                 .createOrder(order)
-                .statusCode(201)
+                .statusCode(HttpStatus.SC_CREATED)
                 .body("track", notNullValue());
         track = response.extract().body().path("track");
     }
