@@ -4,6 +4,7 @@ import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.ValidatableResponse;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.http.HttpStatus;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,6 +23,9 @@ public class AuthorizationCourierTests extends BaseTest{
         courier
                 .setLogin(RandomStringUtils.randomAlphanumeric(10))
                 .setPassword(RandomStringUtils.randomAlphanumeric(11));
+        courierSteps
+                .createCourier(courier);
+
     }
 
     @Test
@@ -29,10 +33,8 @@ public class AuthorizationCourierTests extends BaseTest{
     @Description("Курьер успешно авторизуется")
     public void shouldLoginCourierTest() {
         courierSteps
-                .createCourier(courier);
-        courierSteps
                 .loginCourier(courier)
-                .statusCode(200)
+                .statusCode(HttpStatus.SC_OK)
                 .body("id", notNullValue());
     }
 
@@ -42,10 +44,8 @@ public class AuthorizationCourierTests extends BaseTest{
     public void errorReturnAuthorizationWithoutLoginTest() {
         courier.setLogin("");
         courierSteps
-                .createCourier(courier);
-        courierSteps
                 .loginCourier(courier)
-                .statusCode(400)
+                .statusCode(HttpStatus.SC_BAD_REQUEST)
                 .body("message", equalTo("Недостаточно данных для входа"));
     }
 
@@ -55,10 +55,8 @@ public class AuthorizationCourierTests extends BaseTest{
     public void errorReturnAuthorizationWithoutPasswordTest() {
         courier.setPassword("");
         courierSteps
-                .createCourier(courier);
-        courierSteps
                 .loginCourier(courier)
-                .statusCode(400)
+                .statusCode(HttpStatus.SC_BAD_REQUEST)
                 .body("message", equalTo("Недостаточно данных для входа"));
     }
 
@@ -66,12 +64,10 @@ public class AuthorizationCourierTests extends BaseTest{
     @DisplayName("Негативный тест на невозможность авторизации курьера c несуществующим логином")
     @Description("Курьер  авторизуется c несуществующим логином")
     public void errorReturnAuthorizationWithNonExistentLoginTest() {
-        courierSteps
-                .createCourier(courier);
         courier.setLogin(RandomStringUtils.randomAlphanumeric(10));
         courierSteps
                 .loginCourier(courier)
-                .statusCode(404)
+                .statusCode(HttpStatus.SC_NOT_FOUND)
                 .body("message", equalTo("Учетная запись не найдена"));
     }
 
@@ -79,19 +75,17 @@ public class AuthorizationCourierTests extends BaseTest{
     @DisplayName("Негативный тест на невозможность авторизации курьера c некорректным паролем")
     @Description("Курьер  авторизуется c некорректным паролем")
     public void errorReturnAuthorizationWithIncorrectPasswordTest() {
-        courierSteps
-                .createCourier(courier);
         courier.setPassword(RandomStringUtils.randomAlphanumeric(10));
         courierSteps
                 .loginCourier(courier)
-                .statusCode(404)
+                .statusCode(HttpStatus.SC_NOT_FOUND)
                 .body("message", equalTo("Учетная запись не найдена"));
     }
 
     @After
     public void tearDown() {
         ValidatableResponse loginResponse = courierSteps.loginCourier(courier);
-        if (loginResponse.extract().statusCode() == 200) {
+        if (loginResponse.extract().statusCode() == HttpStatus.SC_OK) {
             Integer id = loginResponse.extract().body().path("id");
             if (id != null) {
                 courier.setId(id);

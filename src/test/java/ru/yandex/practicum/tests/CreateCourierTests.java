@@ -4,6 +4,7 @@ import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.ValidatableResponse;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.http.HttpStatus;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,7 +31,7 @@ public class CreateCourierTests extends BaseTest {
     public void shouldCreateCourierTest() {
         courierSteps
                 .createCourier(courier)
-                .statusCode(201)
+                .statusCode(HttpStatus.SC_CREATED)
                 .body("ok", is(true));
     }
 
@@ -40,11 +41,11 @@ public class CreateCourierTests extends BaseTest {
     public void  impossibleCreateIdenticalCouriersTest() {
         courierSteps
                 .createCourier(courier)
-                .statusCode(201)
+                .statusCode(HttpStatus.SC_CREATED)
                 .body("ok", is(true));
         courierSteps
                 .createCourier(courier)
-                .statusCode(409)
+                .statusCode(HttpStatus.SC_CONFLICT)
                 .body("message", equalTo("Этот логин уже используется."));
     }
 
@@ -55,7 +56,7 @@ public class CreateCourierTests extends BaseTest {
         courier.setLogin("");
         courierSteps
                 .createCourier(courier)
-                .statusCode(400)
+                .statusCode(HttpStatus.SC_BAD_REQUEST)
                 .body("message", equalTo("Недостаточно данных для создания учетной записи"));
     }
 
@@ -66,7 +67,7 @@ public class CreateCourierTests extends BaseTest {
         courier.setPassword("");
         courierSteps
                 .createCourier(courier)
-                .statusCode(400)
+                .statusCode(HttpStatus.SC_BAD_REQUEST)
                 .body("message", equalTo("Недостаточно данных для создания учетной записи"));
     }
 
@@ -78,14 +79,14 @@ public class CreateCourierTests extends BaseTest {
         courier.setLogin("");
         courierSteps
                 .createCourier(courier)
-                .statusCode(400)
+                .statusCode(HttpStatus.SC_BAD_REQUEST)
                 .body("message", equalTo("Недостаточно данных для создания учетной записи"));
     }
 
     @After
     public void tearDown () {
         ValidatableResponse loginResponse = courierSteps.loginCourier(courier);
-        if (loginResponse.extract().statusCode() == 200) {
+        if (loginResponse.extract().statusCode() == HttpStatus.SC_OK) {
             Integer id = loginResponse.extract().body().path("id");
             if (id != null) {
                 courier.setId(id);
