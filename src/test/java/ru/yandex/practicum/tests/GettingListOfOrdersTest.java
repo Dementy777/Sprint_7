@@ -2,6 +2,7 @@ package ru.yandex.practicum.tests;
 
 import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
+import org.apache.http.HttpStatus;
 import org.junit.Before;
 import org.junit.Test;
 import ru.yandex.practicum.model.OrderPojo;
@@ -25,7 +26,7 @@ public class GettingListOfOrdersTest extends BaseTest {
     public void gettingListOrdersTest() {
         orderSteps
                 .getOrderList(order)
-                .statusCode(200)
+                .statusCode(HttpStatus.SC_OK)
                 .body("orders", notNullValue());
 
     }
